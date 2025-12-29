@@ -57,13 +57,13 @@ const App: React.FC = () => {
 
     const handleFocusOut = (e: FocusEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) {
-        // Force the layout viewport back to the top when keyboard starts closing
-        // This is critical for Safari iOS not getting stuck scrolled up
+        // Force the layout viewport back to the top when keyboard starts closing.
+        // A slightly longer timeout (100ms) ensures Safari has processed the keyboard dismissal.
         setTimeout(() => {
-          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          window.scrollTo(0, 0);
           document.body.scrollTop = 0;
           handleViewportChange();
-        }, 30);
+        }, 100);
       }
     };
 

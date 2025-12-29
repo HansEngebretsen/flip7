@@ -3,7 +3,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#2e1065">
     <title>Flip 7 Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -66,8 +66,8 @@
             --accent: #f472b6;
         }
         html, body { 
-            height: 100%;
-            width: 100%;
+            height: 100dvh;
+            width: 100vw;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -75,8 +75,11 @@
             color: var(--text-main); 
             transition: background-color 0.5s ease; 
             -webkit-tap-highlight-color: transparent;
-            /* Prevent rubber-banding which messes up layout viewport vs visual viewport */
+            /* Prevent overscroll bounce which messes with layout calculations */
             overscroll-behavior: none;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
         #root {
             height: var(--app-height, 100dvh);
@@ -90,6 +93,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .emoji-font { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"; }
 
+        /* Prevent unwanted zooming and handle layout shifts */
         input {
             font-size: 16px !important;
         }
