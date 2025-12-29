@@ -51,14 +51,14 @@ const Dashboard: React.FC<DashboardProps> = ({
   }, [leaderboard, metric]);
 
   return (
-    <div className="flex flex-col h-full z-10 fade-in overflow-y-auto no-scrollbar pb-12">
+    <div className="flex flex-col h-full z-10 fade-in overflow-y-auto no-scrollbar pb-[calc(3rem+var(--safe-bottom))] pt-[var(--safe-top)]">
       <div className="pt-6 px-6 flex justify-end items-center">
         <button className="w-10 h-10 rounded-full bg-magical-surface text-magical-muted hover:text-magical-text hover:bg-magical-surface2 transition-all flex items-center justify-center shadow-lg" onClick={onToggleTheme}>
           <span className="material-symbols-rounded text-xl">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
         </button>
       </div>
 
-      <div className="p-4 space-y-10">
+      <div className="p-4 space-y-10 px-[calc(1rem+var(--safe-left))] pr-[calc(1rem+var(--safe-right))]">
         <div className="flex flex-col items-center justify-center px-2 -mt-8">
           <div className="relative group cursor-pointer" onClick={onToggleTheme}>
             <div className="absolute inset-0 bg-gradient-to-tr from-pink-500 to-violet-500 rounded-3xl blur-[40px] opacity-40 animate-pulse"></div>
