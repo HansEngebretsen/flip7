@@ -65,32 +65,41 @@
             --text-muted: #c4b5fd;
             --accent: #f472b6;
         }
-        body { 
+        html, body { 
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             background-color: var(--bg-app); 
             color: var(--text-main); 
             transition: background-color 0.5s ease; 
             -webkit-tap-highlight-color: transparent;
-            /* Using app-height to handle Safari's visual viewport shifts */
-            height: var(--app-height);
-            width: 100vw;
-            overflow: hidden;
-            position: fixed; /* Keep the body from scrolling itself */
-            top: 0;
-            left: 0;
+            /* Prevent rubber-banding which messes up layout viewport vs visual viewport */
+            overscroll-behavior: none;
         }
         #root {
-            height: 100%;
+            height: var(--app-height, 100dvh);
             width: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .emoji-font { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"; }
 
-        /* Ensure inputs never trigger Safari auto-zoom by enforcing 16px min font size */
         input {
             font-size: 16px !important;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 <script type="importmap">

@@ -74,28 +74,26 @@ const GameView: React.FC<GameViewProps> = ({ game, onGoBack, onUpdate, onPromptD
 
   return (
     <div className="flex flex-col h-full z-10 transition-opacity duration-300 overflow-hidden">
-      {/* Header is in-flow to prevent orphans when Safari pushes viewport */}
-      <header className="bg-magical-bg/95 backdrop-blur-xl border-b border-magical-border shrink-0 z-50 shadow-sm relative pt-[var(--safe-top)]">
+      {/* Header is in-flow using flexbox for better Safari keyboard stability */}
+      <header className="bg-magical-bg/95 backdrop-blur-xl border-b border-magical-border shrink-0 z-50 shadow-sm pt-[var(--safe-top)]">
         <div className="flex items-center justify-between px-3 h-14">
-          <div className="flex items-center gap-1 z-10">
+          <div className="flex items-center gap-1 min-w-[3rem]">
             <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-magical-surface transition-colors active:scale-90 text-magical-muted" onClick={onGoBack}>
               <span className="material-symbols-rounded text-2xl">arrow_back_ios_new</span>
             </button>
-            <span className="text-[0.65rem] text-magical-muted font-mono font-bold uppercase tracking-tight whitespace-nowrap pt-1 opacity-80">
-              {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            </span>
           </div>
-          <div className="absolute left-1/2 top-[var(--safe-top)] transform -translate-x-1/2 h-14 flex items-start pt-1 overflow-visible pointer-events-none">
-            <div className="relative h-14 w-auto overflow-visible">
-              <img src={LOGO_URL} alt="Flip 7" className="h-[4.5rem] w-auto object-contain drop-shadow-xl" />
-            </div>
+          
+          {/* Logo container - properly centered in flow */}
+          <div className="flex-1 flex items-center justify-center px-2">
+            <img src={LOGO_URL} alt="Flip 7" className="h-9 sm:h-11 w-auto object-contain drop-shadow-xl" />
           </div>
-          <div className="flex items-center gap-1 z-10">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full text-magical-muted" onClick={() => setShowSettings(true)}>
+
+          <div className="flex items-center gap-1 min-w-[3rem] justify-end">
+            <button className="w-9 h-9 flex items-center justify-center rounded-full text-magical-muted" onClick={() => setShowSettings(true)}>
               <span className="material-symbols-rounded text-xl">tune</span>
             </button>
-            <button className="h-9 px-3 rounded-full bg-magical-surface text-magical-text border border-magical-border font-bold text-xs shadow-lg flex items-center gap-1" onClick={() => onUpdate({ ...game, players: [...game.players, { id: `p${Date.now()}`, name: `P${game.players.length + 1}`, icon: getRandomEmoji(), scores: new Array(game.roundCount).fill(null) }] })}>
-              <span className="material-symbols-rounded text-base text-magical-accent">person_add</span> Add
+            <button className="h-8 px-2.5 rounded-full bg-magical-surface text-magical-text border border-magical-border font-bold text-[10px] uppercase shadow-md flex items-center gap-1" onClick={() => onUpdate({ ...game, players: [...game.players, { id: `p${Date.now()}`, name: `P${game.players.length + 1}`, icon: getRandomEmoji(), scores: new Array(game.roundCount).fill(null) }] })}>
+              <span className="material-symbols-rounded text-sm text-magical-accent">person_add</span>
             </button>
           </div>
         </div>
@@ -105,7 +103,7 @@ const GameView: React.FC<GameViewProps> = ({ game, onGoBack, onUpdate, onPromptD
         <div 
           style={{ 
             display: 'grid', 
-            gridTemplateColumns: '3.5rem repeat(var(--player-count), minmax(6rem, 1fr))', 
+            gridTemplateColumns: '3.5rem repeat(var(--player-count), minmax(6.5rem, 1fr))', 
             gridTemplateRows: 'var(--header-height)', 
             gridAutoRows: 'var(--row-height)', 
             overflowX: 'auto', 

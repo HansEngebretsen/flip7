@@ -29,40 +29,58 @@ const App: React.FC = () => {
     type: null, id: null, name: ''
   });
 
-  // Safari Viewport Fixes
+  // 1. Sync Theme Color and Color Scheme with the browser chrome
   useEffect(() => {
+    document.documentElement.classList.toggle('dark', state.theme === 'dark');
+    document.documentElement.style.colorScheme = state.theme;
+    
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      // Fuchsia 50 for light, Violet 950 for dark
+      themeColorMeta.setAttribute('content', state.theme === 'dark' ? '#2e1065' : '#fdf4ff');
+    }
+  }, [state.theme]);
+
+  // 2. Safari Viewport and Keyboard Fixes
+  useEffect(() => {
+    const vv = window.visualViewport;
+    
     const handleViewportChange = () => {
-      if (window.visualViewport) {
-        document.documentElement.style.setProperty('--app-height', `${window.visualViewport.height}px`);
+      if (vv) {
+        document.documentElement.style.setProperty('--app-height', `${vv.height}px`);
+        // If Safari has scrolled the layout viewport (e.g. keyboard open), try to keep it at 0,0
+        if (window.scrollY !== 0) {
+          window.scrollTo(0, 0);
+        }
       }
     };
 
-    const handleBlur = (e: FocusEvent) => {
-      // If an input is blurred, force scroll to 0 to recover from Safari's shift
+    const handleFocusOut = (e: FocusEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) {
-        window.scrollTo(0, 0);
+        // Force the layout viewport back to the top when keyboard starts closing
+        // This is critical for Safari iOS not getting stuck scrolled up
+        setTimeout(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          document.body.scrollTop = 0;
+          handleViewportChange();
+        }, 30);
       }
     };
 
-    window.visualViewport?.addEventListener('resize', handleViewportChange);
-    window.visualViewport?.addEventListener('scroll', handleViewportChange);
-    document.addEventListener('focusout', handleBlur);
+    vv?.addEventListener('resize', handleViewportChange);
+    vv?.addEventListener('scroll', handleViewportChange);
+    document.addEventListener('focusout', handleFocusOut);
 
-    // Initial set
     handleViewportChange();
 
     return () => {
-      window.visualViewport?.removeEventListener('resize', handleViewportChange);
-      window.visualViewport?.removeEventListener('scroll', handleViewportChange);
-      document.removeEventListener('focusout', handleBlur);
+      vv?.removeEventListener('resize', handleViewportChange);
+      vv?.removeEventListener('scroll', handleViewportChange);
+      document.removeEventListener('focusout', handleFocusOut);
     };
   }, []);
 
   useEffect(() => { localStorage.setItem(DB_KEY, JSON.stringify(state)); }, [state]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', state.theme === 'dark');
-  }, [state.theme]);
 
   const toggleTheme = useCallback(() => {
     setState(prev => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }));
@@ -152,7 +170,7 @@ const App: React.FC = () => {
   const activeGame = state.games.find(g => g.id === state.activeGameId);
 
   return (
-    <div className="flex-1 flex flex-col selection:bg-pink-500/30 overflow-hidden relative" style={{ height: 'var(--app-height)' }}>
+    <div id="root">
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute top-1/2 right-0 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-2s' }}></div>
