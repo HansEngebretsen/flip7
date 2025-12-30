@@ -5,7 +5,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
+    "start": "npm run dev",
     "build": "vite build",
     "preview": "vite preview"
   },
