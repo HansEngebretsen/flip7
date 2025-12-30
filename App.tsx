@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppState, Game, Player, LeaderboardMetric } from './types';
 import { DB_KEY, getRandomEmoji } from './constants';
@@ -29,57 +28,16 @@ const App: React.FC = () => {
     type: null, id: null, name: ''
   });
 
-  // 1. Sync Theme Color and Color Scheme with the browser chrome
+  // Sync Theme Color and Color Scheme with the browser chrome
   useEffect(() => {
     document.documentElement.classList.toggle('dark', state.theme === 'dark');
     document.documentElement.style.colorScheme = state.theme;
     
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      // Fuchsia 50 for light, Violet 950 for dark
       themeColorMeta.setAttribute('content', state.theme === 'dark' ? '#2e1065' : '#fdf4ff');
     }
   }, [state.theme]);
-
-  // 2. Safari Viewport and Keyboard Fixes
-  useEffect(() => {
-    const vv = window.visualViewport;
-    
-    const handleViewportChange = () => {
-      if (vv) {
-        document.documentElement.style.setProperty('--app-height', `${vv.height}px`);
-        // If Safari has scrolled the layout viewport despite position: fixed, reset it.
-        if (window.scrollY !== 0 || window.scrollX !== 0) {
-          window.scrollTo(0, 0);
-        }
-      }
-    };
-
-    const handleFocusOut = (e: FocusEvent) => {
-      // Force the layout viewport back to the top when keyboard dismisses.
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) {
-        // Use a 100ms timeout as per user research to ensure keyboard is fully gone
-        setTimeout(() => {
-          window.scrollTo(0, 0);
-          document.body.scrollTop = 0;
-          handleViewportChange();
-        }, 100);
-      }
-    };
-
-    vv?.addEventListener('resize', handleViewportChange);
-    vv?.addEventListener('scroll', handleViewportChange);
-    document.addEventListener('focusout', handleFocusOut);
-
-    // Initial sync
-    handleViewportChange();
-
-    return () => {
-      vv?.removeEventListener('resize', handleViewportChange);
-      vv?.removeEventListener('scroll', handleViewportChange);
-      document.removeEventListener('focusout', handleFocusOut);
-    };
-  }, []);
 
   useEffect(() => { localStorage.setItem(DB_KEY, JSON.stringify(state)); }, [state]);
 

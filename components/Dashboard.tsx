@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react';
 import { Game, LeaderboardMetric, Theme } from '../types';
 import { LOGO_URL } from '../constants';
-import LongPressable from './LongPressable';
 
 interface DashboardProps {
   games: Game[];
@@ -80,19 +79,24 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button className={`px-3 py-1.5 rounded-lg transition-all ${metric === 'score' ? 'bg-magical-surface2 text-magical-text shadow-sm' : 'text-magical-muted'}`} onClick={() => setMetric('score')}>Score</button>
               </div>
             </div>
-            <div className="flex items-end gap-3 h-44 overflow-x-auto no-scrollbar pb-2 px-1">
+            
+            <div className="flex w-full gap-2 h-48 overflow-x-auto no-scrollbar pb-2">
               {leaderboard.map((p, idx) => {
                 const val = metric === 'wins' ? p.wins : p.score;
                 const height = (val / maxVal) * 100;
                 const colors = ['bg-pink-400', 'bg-violet-400', 'bg-indigo-400', 'bg-blue-400', 'bg-cyan-400'];
-                const isTall = height > 25;
                 return (
-                  <div key={p.name} className="flex flex-col items-center justify-end h-full min-w-[3.75rem] cursor-default">
-                    {!isTall && <div className="text-[10px] font-bold text-magical-accent mb-1">{val}</div>}
-                    <div className={`w-full mx-1.5 rounded-t-xl ${colors[idx % colors.length]} opacity-80 group-hover:opacity-100 transition-all flex flex-col items-center justify-start pt-2`} style={{ height: `${Math.max(12, height)}%` }}>
-                      {isTall && <div className="text-[10px] font-bold text-white/90 drop-shadow-sm">{val}</div>}
+                  <div key={p.name} className="flex flex-col h-full min-w-[40px] flex-1 group">
+                    <div className="flex-1 w-full flex flex-col justify-end items-center">
+                        <div className="text-[10px] font-bold text-magical-accent mb-1 opacity-60 group-hover:opacity-100 transition-opacity whitespace-nowrap">{val}</div>
+                        <div 
+                          className={`w-full rounded-t-xl ${colors[idx % colors.length]} opacity-80 group-hover:opacity-100 transition-all`} 
+                          style={{ height: `${Math.max(4, height)}%` }}
+                        ></div>
                     </div>
-                    <div className="text-[10px] font-bold text-magical-muted mt-2 truncate w-full text-center">{p.name}</div>
+                    <div className="h-6 w-full flex items-center justify-center mt-2">
+                        <div className="text-[10px] font-bold text-magical-muted truncate w-full text-center">{p.name}</div>
+                    </div>
                   </div>
                 );
               })}
@@ -105,8 +109,14 @@ const Dashboard: React.FC<DashboardProps> = ({
             <span className="material-symbols-rounded text-base">history</span> History
           </h2>
           <div className="grid grid-cols-2 gap-3">
-            <button className="relative flex flex-col items-center justify-center h-40 border-2 border-dashed border-magical-border rounded-[1.5rem] hover:border-magical-accent hover:bg-magical-accent/5 transition-all group overflow-hidden" onClick={onNewGame}>
-              <div className="w-14 h-14 rounded-full bg-magical-surface2 flex items-center justify-center shadow-lg mb-3 z-10"><span className="material-symbols-rounded text-2xl text-magical-accent">add</span></div>
+            {/* New Game Button - Consistent Border & Hover Icon BG */}
+            <button 
+              className="relative flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-[1.5rem] transition-all group overflow-hidden border-magical-border hover:border-magical-accent" 
+              onClick={onNewGame}
+            >
+              <div className="w-14 h-14 rounded-full bg-magical-surface2 group-hover:bg-magical-accent flex items-center justify-center shadow-lg mb-3 z-10 transition-colors">
+                <span className="material-symbols-rounded text-2xl text-[#2e1065] font-bold">add</span>
+              </div>
               <span className="text-xs font-bold text-magical-muted uppercase tracking-wider z-10">New Game</span>
             </button>
             {games.map(g => {
@@ -115,12 +125,18 @@ const Dashboard: React.FC<DashboardProps> = ({
               const leader = totals[0];
               const isOver = leader.s >= g.targetScore;
               return (
-                <LongPressable key={g.id} onLongPress={() => onPromptDelete('game', g.id, `Game on ${d.toLocaleDateString()}`)} onClick={() => onLoadGame(g.id)}>
-                  <div className={`bg-magical-surface border rounded-[1.5rem] p-4 flex flex-col justify-between h-40 cursor-pointer relative overflow-hidden group shadow-sm hover:shadow-xl hover:border-magical-accent ${isOver ? 'border-magical-accent/40' : 'border-magical-border'}`}>
+                <div key={g.id} onClick={() => onLoadGame(g.id)} className={`bg-magical-surface border rounded-[1.5rem] p-4 flex flex-col justify-between h-40 cursor-pointer relative overflow-hidden group shadow-sm hover:shadow-xl hover:border-magical-accent transition-all ${isOver ? 'border-magical-accent/40' : 'border-magical-border'}`}>
+                    
+                    <button 
+                      className="absolute top-2 right-2 w-8 h-8 bg-magical-bg/90 backdrop-blur-sm rounded-full text-magical-muted hover:text-rose-500 hover:bg-white z-20 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center shadow-sm"
+                      onClick={(e) => { e.stopPropagation(); onPromptDelete('game', g.id, `Game on ${d.toLocaleDateString()}`); }}
+                    >
+                      <span className="material-symbols-rounded text-lg">close</span>
+                    </button>
+
                     <div className="flex justify-between items-start z-10"><span className="text-[10px] font-bold text-magical-muted bg-magical-bg px-2 py-1 rounded-lg">{d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span><span className="text-xs grayscale group-hover:grayscale-0 scale-125">{leader.icon}</span></div>
                     <div className="z-10 mt-2"><div className="flex justify-between items-end mb-2"><span className="text-sm font-bold truncate max-w-[100px]">{leader.n}</span><span className="text-[10px] font-mono text-magical-muted">{leader.s}/{g.targetScore}</span></div><div className="w-full bg-magical-bg h-2.5 rounded-full overflow-hidden border border-magical-border/50"><div className="bg-gradient-to-r from-pink-500 to-violet-500 h-full" style={{ width: `${Math.min(100, (leader.s / g.targetScore) * 100)}%` }}></div></div></div>
-                  </div>
-                </LongPressable>
+                </div>
               );
             })}
           </div>
