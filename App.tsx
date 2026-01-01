@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppState, Game, Player, LeaderboardMetric, GameType } from './types';
 import { DB_KEY, getRandomEmoji } from './constants';
@@ -9,22 +10,30 @@ import GameSelectionModal from './components/GameSelectionModal';
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(DB_KEY);
-    const path = window.location.pathname;
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameIdParam = urlParams.get('id');
-
+    const hash = window.location.hash;
+    
+    // Hash Routing Parsing
     let initialView: 'dashboard' | 'game' = 'dashboard';
     let initialGameType: GameType = 'flip7';
     let initialGameId: number | null = null;
     let initialShowSelector = false;
 
-    if (path === '/13') {
+    if (hash === '#/13') {
         initialGameType = 'thirteen';
-    } else if (path === '/game' && gameIdParam) {
-        initialView = 'game';
-        initialGameId = parseInt(gameIdParam);
-        // We need to find the game type from saved data, defaulting to flip7 if not found yet
-    } else if (path === '/') {
+    } else if (hash === '#/flip7') {
+        initialGameType = 'flip7';
+    } else if (hash.startsWith('#/game')) {
+        const urlParams = new URLSearchParams(hash.split('?')[1]);
+        const gameIdParam = urlParams.get('id');
+        if (gameIdParam) {
+            initialView = 'game';
+            initialGameId = parseInt(gameIdParam);
+        } else {
+            // Invalid game hash, fallback
+            initialShowSelector = true;
+        }
+    } else {
+        // Root or unknown hash
         initialShowSelector = true;
     }
 
@@ -46,7 +55,7 @@ const App: React.FC = () => {
                 // Game not found, redirect to dashboard
                 initialView = 'dashboard';
                 initialGameId = null;
-                window.history.replaceState({}, '', '/');
+                window.location.hash = '#/';
                 initialShowSelector = true;
             }
         }
@@ -80,42 +89,44 @@ const App: React.FC = () => {
   });
 
   const [showGameSelector, setShowGameSelector] = useState(() => {
-      return window.location.pathname === '/';
+      // Show selector if hash is empty or just #/
+      return window.location.hash === '' || window.location.hash === '#/';
   });
 
-  // Handle Browser Navigation
+  // Handle Hash Navigation
   useEffect(() => {
-      const handlePopState = () => {
-          const path = window.location.pathname;
-          const urlParams = new URLSearchParams(window.location.search);
-          const gameIdParam = urlParams.get('id');
-
-          if (path === '/game' && gameIdParam) {
-              const id = parseInt(gameIdParam);
-              const game = state.games.find(g => g.id === id);
-              if (game) {
-                  setState(prev => ({ ...prev, view: 'game', activeGameId: id, activeGameType: game.type }));
-                  setShowGameSelector(false);
-              } else {
-                  // Game not found
-                  window.history.replaceState({}, '', '/');
-                  setState(prev => ({ ...prev, view: 'dashboard', activeGameId: null, activeGameType: 'flip7' }));
-                  setShowGameSelector(true);
+      const handleHashChange = () => {
+          const hash = window.location.hash;
+          
+          if (hash.startsWith('#/game')) {
+              const urlParams = new URLSearchParams(hash.split('?')[1]);
+              const gameIdParam = urlParams.get('id');
+              if (gameIdParam) {
+                  const id = parseInt(gameIdParam);
+                  const game = state.games.find(g => g.id === id);
+                  if (game) {
+                      setState(prev => ({ ...prev, view: 'game', activeGameId: id, activeGameType: game.type }));
+                      setShowGameSelector(false);
+                  } else {
+                      // Game not found
+                      window.location.hash = '#/';
+                  }
               }
-          } else if (path === '/13') {
+          } else if (hash === '#/13') {
               setState(prev => ({ ...prev, view: 'dashboard', activeGameId: null, activeGameType: 'thirteen' }));
               setShowGameSelector(false);
-          } else if (path === '/flip7') {
+          } else if (hash === '#/flip7') {
               setState(prev => ({ ...prev, view: 'dashboard', activeGameId: null, activeGameType: 'flip7' }));
               setShowGameSelector(false);
           } else {
-              // Root /
-              setState(prev => ({ ...prev, view: 'dashboard', activeGameId: null, activeGameType: 'flip7' }));
+              // Root or Selector
+              setState(prev => ({ ...prev, view: 'dashboard', activeGameId: null, activeGameType: 'flip7' })); // Default underlying type
               setShowGameSelector(true);
           }
       };
-      window.addEventListener('popstate', handlePopState);
-      return () => window.removeEventListener('popstate', handlePopState);
+      
+      window.addEventListener('hashchange', handleHashChange);
+      return () => window.removeEventListener('hashchange', handleHashChange);
   }, [state.games]);
 
   useEffect(() => {
@@ -147,8 +158,8 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, activeGameType: type }));
     setShowGameSelector(false);
     
-    const path = type === 'thirteen' ? '/13' : '/flip7';
-    window.history.pushState({}, '', path);
+    const hash = type === 'thirteen' ? '#/13' : '#/flip7';
+    window.location.hash = hash;
   }, []);
 
   const setMetric = useCallback((metric: LeaderboardMetric) => {
@@ -192,7 +203,7 @@ const App: React.FC = () => {
       view: 'game'
     }));
     
-    window.history.pushState({}, '', `/game?id=${newGame.id}`);
+    window.location.hash = `#/game?id=${newGame.id}`;
   }, [state.games, state.reorderEnabled, state.activeGameType]);
 
   const loadGame = useCallback((id: number) => {
@@ -200,14 +211,14 @@ const App: React.FC = () => {
     const game = state.games.find(g => g.id === id);
     if (game) {
         setState(prev => ({ ...prev, activeGameId: id, view: 'game', activeGameType: game.type }));
-        window.history.pushState({}, '', `/game?id=${id}`);
+        window.location.hash = `#/game?id=${id}`;
     }
   }, [state.games]);
 
   const goToDashboard = useCallback(() => {
     setState(prev => ({ ...prev, view: 'dashboard', activeGameId: null }));
-    const path = state.activeGameType === 'thirteen' ? '/13' : '/flip7';
-    window.history.pushState({}, '', path);
+    const hash = state.activeGameType === 'thirteen' ? '#/13' : '#/flip7';
+    window.location.hash = hash;
   }, [state.activeGameType]);
 
   const updateGameState = useCallback((updatedGame: Game) => {
@@ -231,8 +242,8 @@ const App: React.FC = () => {
             activeGameId: prev.activeGameId === deleteContext.id ? null : prev.activeGameId
           };
           if (prev.activeGameId === deleteContext.id) {
-              const path = prev.activeGameType === 'thirteen' ? '/13' : '/flip7';
-              window.history.pushState({}, '', path);
+              const hash = prev.activeGameType === 'thirteen' ? '#/13' : '#/flip7';
+              window.location.hash = hash;
           }
           return nextState;
       });
