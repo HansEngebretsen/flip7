@@ -8,7 +8,7 @@ export const getRandomEmoji = () => EMOJIS[Math.floor(Math.random() * EMOJIS.len
 
 // The logo from the user request
 export const LOGO_URL = 'https://assets.codepen.io/18320/flip7-logo.png';
-export const THIRTEEN_LOGO_LARGE = './img/13-logo-large.png';
-export const THIRTEEN_LOGO_SMALL = './img/13-logo-small.png';
+export const THIRTEEN_LOGO_LARGE = 'https://assets.codepen.io/18320/13-logo-large.png';
+export const THIRTEEN_LOGO_SMALL = 'https://assets.codepen.io/18320/13-logo-small.png';
 
 export const THIRTEEN_LABELS = ['K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2', 'A'];
