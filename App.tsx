@@ -131,21 +131,32 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const isThirteen = state.activeGameType === 'thirteen';
-    document.documentElement.classList.toggle('thirteen-mode', isThirteen);
+    const isDark = state.theme === 'dark';
     
+    // 1. Toggle Global Classes
+    document.documentElement.classList.toggle('thirteen-mode', isThirteen);
+    document.documentElement.classList.toggle('dark', !isThirteen && isDark);
+
+    // 2. Determine Theme Color & Scheme
+    let themeColor = '#fdf4ff'; // Default Light
+    let colorScheme = 'light';
+
     if (isThirteen) {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.style.colorScheme = 'light';
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) themeColorMeta.setAttribute('content', '#f1e7ca');
+        themeColor = '#f1e7ca';
+        colorScheme = 'light';
     } else {
-        document.documentElement.classList.toggle('dark', state.theme === 'dark');
-        document.documentElement.style.colorScheme = state.theme;
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', state.theme === 'dark' ? '#2e1065' : '#fdf4ff');
-        }
+        themeColor = isDark ? '#2e1065' : '#fdf4ff';
+        colorScheme = isDark ? 'dark' : 'light';
     }
+
+    // 3. Apply Scheme & Meta
+    document.documentElement.style.colorScheme = colorScheme;
+    
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', themeColor);
+    }
+
   }, [state.theme, state.activeGameType]);
 
   useEffect(() => { localStorage.setItem(DB_KEY, JSON.stringify(state)); }, [state]);
@@ -269,9 +280,9 @@ const App: React.FC = () => {
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {state.activeGameType !== 'thirteen' && (
           <>
-            <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute top-24 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-float"></div>
             <div className="absolute top-1/2 right-0 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-2s' }}></div>
-            <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-4s' }}></div>
+            <div className="absolute bottom-24 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-4s' }}></div>
           </>
         )}
       </div>
